@@ -178,6 +178,7 @@ public class FloatingWindowService extends Service implements TextAccessibilityS
     //    static final String apiSecret = "MGY0YjM4NWMyZDYyYWRlMmI2MTlhZmZk"; //在控制台-我的应用-语音听写（流式版）获取
     static final String apiKey = "f6ba7d5007621a7c7570c2d39437e861"; //在控制台-我的应用-语音听写（流式版）获取
     //    static final String apiKey = "8735f05eb184366efebb03483591ff41"; //在控制台-我的应用-语音听写（流式版）获取
+    private String baseUrl; // backend service for GPT-4/VisualGLM-6B
     private static final String TAG = "MainActivity";
     public static final int StatusFirstFrame = 0;
     public static final int StatusContinueFrame = 1;
@@ -205,6 +206,7 @@ public class FloatingWindowService extends Service implements TextAccessibilityS
     @Override
     public void onCreate() {
         super.onCreate();
+        baseUrl = BackendConfig.getBaseUrl(this);
         imageSelectedReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -788,7 +790,7 @@ public class FloatingWindowService extends Service implements TextAccessibilityS
             e.printStackTrace();
         }
 
-        post("http://166.111.139.116:22231/gpt4_sd_draw", data.toString(), new Callback() {
+        post(baseUrl + "/gpt4_sd_draw", data.toString(), new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 Log.e(TAG, "onFailure: gpt4_sd_draw", e);
@@ -898,7 +900,7 @@ public class FloatingWindowService extends Service implements TextAccessibilityS
 
         // 发送请求到服务器
         // 不要在主线程中执行网络请求，因为这可能导致应用的用户界面无响应。OkHttp库已经在新的线程中处理了这个问题
-        post("http://166.111.139.116:22231/gpt4_mode_2", data.toString(), new Callback() {
+        post(baseUrl + "/gpt4_mode_2", data.toString(), new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 Log.e(TAG, "onFailure: gpt4_mode_2");
@@ -996,7 +998,7 @@ public class FloatingWindowService extends Service implements TextAccessibilityS
 
         // 发送请求到服务器
         // 不要在主线程中执行网络请求，因为这可能导致应用的用户界面无响应。OkHttp库已经在新的线程中处理了这个问题
-        post("http://166.111.139.116:22231/gpt4_predict", data.toString(), new Callback() {
+        post(baseUrl + "/gpt4_predict", data.toString(), new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 Log.e(TAG, "onFailure: gpt4_predict");
@@ -1156,7 +1158,7 @@ public class FloatingWindowService extends Service implements TextAccessibilityS
                 .addFormDataPart("data", data.toString());
         MultipartBody multipartBody = multipartBodyBuilder.build();
         Request request = new Request.Builder()
-                .url("http://166.111.139.116:22231/image_edit_topic")
+                .url(baseUrl + "/image_edit_topic")
                 .post(multipartBody)
                 .build();
 
@@ -1282,7 +1284,7 @@ public class FloatingWindowService extends Service implements TextAccessibilityS
                 .addFormDataPart("data", data.toString());
         MultipartBody multipartBody = multipartBodyBuilder.build();
         Request request = new Request.Builder()
-                .url("http://166.111.139.116:22231/save_sketch")
+                .url(baseUrl + "/save_sketch")
                 .post(multipartBody)
                 .build();
 
@@ -1383,7 +1385,7 @@ public class FloatingWindowService extends Service implements TextAccessibilityS
                 .addFormDataPart("data", data.toString());
         MultipartBody multipartBody = multipartBodyBuilder.build();
         Request request = new Request.Builder()
-                .url("http://166.111.139.116:22231/get_user_env")
+                .url(baseUrl + "/get_user_env")
                 .post(multipartBody)
                 .build();
 
@@ -1449,7 +1451,7 @@ public class FloatingWindowService extends Service implements TextAccessibilityS
             e.printStackTrace();
         }
 
-        post("http://166.111.139.116:22231/gpt4_sd_edit", data.toString(), new Callback() {
+        post(baseUrl + "/gpt4_sd_edit", data.toString(), new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 Log.e(TAG, "onFailure: gpt4_sd_edit", e);

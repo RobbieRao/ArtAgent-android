@@ -47,36 +47,40 @@ public class AppClient {
 
     public String doRequest(JSONObject requestData, Map<String, String> requestPathMap) throws IOException, SignatureException {
         URL realUrl = new URL(buildAuthRequestUrl());
-        URLConnection connection = realUrl.openConnection();
-        HttpURLConnection httpURLConnection = (HttpURLConnection) connection;
+        HttpURLConnection httpURLConnection = (HttpURLConnection) realUrl.openConnection();
         httpURLConnection.setDoInput(true);
         httpURLConnection.setDoOutput(true);
         httpURLConnection.setRequestMethod("POST");
-        httpURLConnection.setRequestProperty("Content-type","application/json");
+        httpURLConnection.setRequestProperty("Content-type", "application/json");
 
-        OutputStream out = httpURLConnection.getOutputStream();
         String newRequestData = this.buildRequestData(requestData, requestPathMap);
-        out.write(newRequestData.getBytes());
-        out.flush();
+        try (OutputStream out = httpURLConnection.getOutputStream()) {
+            out.write(newRequestData.getBytes(StandardCharsets.UTF_8));
+            out.flush();
+        }
 
         logger.info("send data is :{}", newRequestData);
 
-        InputStream is;
-        try{
-            is = httpURLConnection.getInputStream();
-        }catch (Exception e){
-            is = httpURLConnection.getErrorStream();
-            logger.error("request message is {}, code is:{}", httpURLConnection.getResponseMessage(), readAllBytes(is));
+        String respData;
+        try (InputStream is = httpURLConnection.getInputStream()) {
+            respData = readAllBytes(is);
+        } catch (IOException e) {
+            try (InputStream es = httpURLConnection.getErrorStream()) {
+                String error = es != null ? readAllBytes(es) : e.getMessage();
+                logger.error("request message is {}, code is:{}", httpURLConnection.getResponseMessage(), error);
+                respData = error;
+            }
+        } finally {
+            httpURLConnection.disconnect();
         }
 
-        String respData = readAllBytes(is);
         logger.info("respData:{}", respData);
 
         JSONObject jsonObject = JSONObject.parseObject(respData);
         JSONObject payload = jsonObject.getJSONObject("payload");
         JSONObject output_text = payload.getJSONObject("output_text");
         String text = output_text.getString("text");
-        String textBase64Decode=new String(Base64.getDecoder().decode(text), StandardCharsets.UTF_8);
+        String textBase64Decode = new String(Base64.getDecoder().decode(text), StandardCharsets.UTF_8);
         System.out.println("\ntext字段解析结果：");
         System.out.println(textBase64Decode);
 
