@@ -6,13 +6,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
 
-import java.util.UUID;
 
 public class DrawingView extends View {
 
@@ -27,8 +24,11 @@ public class DrawingView extends View {
     }
 
     public void clearCanvas() {  // 清除画板
-        drawCanvas.drawColor(Color.WHITE);
-        invalidate();
+        if (drawCanvas != null) {
+            drawCanvas.drawColor(Color.WHITE);
+            drawPath.reset();
+            invalidate();
+        }
     }
 
     public void setBrushSize(float newSize) {  // 不同画笔大小
